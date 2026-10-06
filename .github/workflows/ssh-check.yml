@@ -1,0 +1,42 @@
+name: SSH check (read-only)
+
+# Prüft Login und Rechte auf dem Docs-Webroot, ohne etwas zu schreiben, zu ändern oder zu löschen.
+# Nur manuell. Kein rsync, kein Deploy.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ssh-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read-only SSH check
+        env:
+          SSH_HOST: ${{ secrets.DOCS_SSH_HOST }}
+          SSH_PORT: ${{ secrets.DOCS_SSH_PORT }}
+          SSH_USER: ${{ secrets.DOCS_SSH_USER }}
+          SSH_KEY: ${{ secrets.DOCS_SSH_KEY }}
+          WEBROOT: ${{ secrets.DOCS_WEBROOT }}
+        run: |
+          set -euo pipefail
+          umask 077
+          key="$(mktemp)"
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$SSH_KEY" > "$key"
+          ssh -i "$key" -p "$SSH_PORT" \
+            -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 \
+            -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="$(mktemp)" \
+            "$SSH_USER@$SSH_HOST" bash -s -- "$WEBROOT" <<'REMOTE'
+          set -u
+          root="$1"
+          echo "login=ok"
+          echo "remote_user=$(whoami)"
+          [ -d "$root" ] && echo "webroot_exists=yes" || echo "webroot_exists=no"
+          [ -w "$root" ] && echo "webroot_writable=yes" || echo "webroot_writable=no"
+          [ -f "$root/index.html" ] && echo "index_html=yes" || echo "index_html=no"
+          echo "file_count=$(find "$root" -type f 2>/dev/null | wc -l)"
+          REMOTE
