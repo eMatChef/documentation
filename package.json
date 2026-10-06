@@ -3,11 +3,19 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vitepress dev",
-    "build": "vitepress build",
-    "preview": "vitepress preview"
+    "demo:fetch": "node scripts/fetch-demo-accounts.mjs",
+    "dev": "npm run demo:fetch && vitepress dev",
+    "build": "npm run demo:fetch && vitepress build",
+    "build:nofetch": "vitepress build",
+    "preview": "vitepress preview",
+    "check": "node scripts/check-build.mjs"
   },
   "devDependencies": {
+    "@types/qrcode": "^1.5.6",
+    "qrcode": "^1.5.4",
     "vitepress": "^1.6.4"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

@@ -1,0 +1,5 @@
+{
+  "repo": "https://github.com/eMatChef/eMatChef1.git",
+  "ref": "develop",
+  "path": "backend/data/seeds/dev-demo/demo-accounts.json"
+}

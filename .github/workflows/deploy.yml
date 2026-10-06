@@ -1,0 +1,78 @@
+name: Deploy docs.ematchef.ch
+
+# Merge nach main → Production-Build → rsync nach Hetzner (Caddy-Webroot).
+# Der Deploy-Job läuft nur, wenn die Repository-Variable DEPLOY_ENABLED=true gesetzt ist (Cutover-Schalter).
+# Ohne Variable wird nur gebaut und geprüft (Probe-Build; Ergebnis als Artefakt).
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  # Hauptrepo kann nach Änderung von demo-accounts.json auslösen: event_type "demo-accounts-changed".
+  repository_dispatch:
+    types: [demo-accounts-changed]
+  # Sicherheitsnetz gegen veraltete Demo-Daten, falls kein Dispatch ankommt.
+  schedule:
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-docs
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build (fail-closed demo data import)
+        run: npm run build -- --outDir dist
+
+      - name: Integrity check
+        run: node scripts/check-build.mjs dist
+
+      - name: Record demo data source
+        run: cat .demo-data/source.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-dist
+          path: dist
+          retention-days: 7
+
+  deploy:
+    name: rsync to production webroot
+    needs: build
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: docs-dist
+          path: dist
+
+      - name: Rsync to droplet
+        uses: burnett01/rsync-deployments@9.0.1
+        with:
+          switches: -avz --delete
+          path: dist/
+          remote_path: ${{ secrets.DOCS_WEBROOT }}/
+          remote_host: ${{ secrets.DOCS_SSH_HOST }}
+          remote_user: ${{ secrets.DOCS_SSH_USER }}
+          remote_key: ${{ secrets.DOCS_SSH_KEY }}
+          remote_port: ${{ secrets.DOCS_SSH_PORT }}

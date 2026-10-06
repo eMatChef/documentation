@@ -9,6 +9,9 @@ export default defineConfig({
   srcExclude: ['README.md'],
   sitemap: {
     hostname: 'https://docs.ematchef.ch',
+    // Testumgebung enthält öffentliche Testdaten (Demo-Konten): nicht in der Sitemap, Seite selbst ist noindex.
+    transformItems: (items) =>
+      items.filter((item) => !/\/(entwicklung|development|developpement|sviluppo)\//.test(item.url)),
   },
   head: [['meta', { name: 'robots', content: 'index, follow' }]],
   themeConfig: {
@@ -26,7 +29,13 @@ export default defineConfig({
       themeConfig: {
         siteTitle: 'eMatChef Hilfe',
         nav: [
-          { text: 'Hilfe', link: '/de/hilfe/aktivitaet-anlegen' },
+          {
+            text: 'Anleitung',
+            items: [
+              { text: 'Hilfe', link: '/de/hilfe/aktivitaet-anlegen' },
+              { text: 'Entwicklung', items: [{ text: 'Testumgebung', link: '/de/entwicklung/testumgebung' }] },
+            ],
+          },
           { text: 'App', link: 'https://app.ematchef.ch' },
           { text: 'Website', link: 'https://ematchef.ch' },
         ],
@@ -44,6 +53,10 @@ export default defineConfig({
               { text: 'Aktivität anlegen', link: '/de/hilfe/aktivitaet-anlegen' },
               { text: 'Externe Ausleihe', link: '/de/hilfe/externe-ausleihe' },
             ],
+          },
+          {
+            text: 'Entwicklung',
+            items: [{ text: 'Testumgebung', link: '/de/entwicklung/testumgebung' }],
           },
         ],
         outline: { label: 'Auf dieser Seite' },
@@ -65,7 +78,13 @@ export default defineConfig({
       themeConfig: {
         siteTitle: 'eMatChef Help',
         nav: [
-          { text: 'Help', link: '/en/help/create-activity' },
+          {
+            text: 'Guides',
+            items: [
+              { text: 'Help', link: '/en/help/create-activity' },
+              { text: 'Development', items: [{ text: 'Test environment', link: '/en/development/test-environment' }] },
+            ],
+          },
           { text: 'App', link: 'https://app.ematchef.ch' },
           { text: 'Website', link: 'https://ematchef.ch' },
         ],
@@ -84,6 +103,10 @@ export default defineConfig({
               { text: 'External loan', link: '/en/help/external-loan' },
             ],
           },
+          {
+            text: 'Development',
+            items: [{ text: 'Test environment', link: '/en/development/test-environment' }],
+          },
         ],
         outline: { label: 'On this page' },
         footer: {
@@ -101,7 +124,13 @@ export default defineConfig({
       themeConfig: {
         siteTitle: 'Aide eMatChef',
         nav: [
-          { text: 'Aide', link: '/fr/aide/creer-une-activite' },
+          {
+            text: 'Guide',
+            items: [
+              { text: 'Aide', link: '/fr/aide/creer-une-activite' },
+              { text: 'Développement', items: [{ text: 'Environnement de test', link: '/fr/developpement/environnement-de-test' }] },
+            ],
+          },
           { text: 'App', link: 'https://app.ematchef.ch' },
           { text: 'Site', link: 'https://ematchef.ch' },
         ],
@@ -119,6 +148,10 @@ export default defineConfig({
               { text: 'Créer une activité', link: '/fr/aide/creer-une-activite' },
               { text: 'Prêt externe', link: '/fr/aide/pret-externe' },
             ],
+          },
+          {
+            text: 'Développement',
+            items: [{ text: 'Environnement de test', link: '/fr/developpement/environnement-de-test' }],
           },
         ],
         outline: { label: 'Sur cette page' },
@@ -141,7 +174,13 @@ export default defineConfig({
       themeConfig: {
         siteTitle: 'Guida eMatChef',
         nav: [
-          { text: 'Guida', link: '/it/aiuto/crea-attivita' },
+          {
+            text: 'Guida',
+            items: [
+              { text: 'Guida', link: '/it/aiuto/crea-attivita' },
+              { text: 'Sviluppo', items: [{ text: 'Ambiente di test', link: '/it/sviluppo/ambiente-di-test' }] },
+            ],
+          },
           { text: 'App', link: 'https://app.ematchef.ch' },
           { text: 'Sito', link: 'https://ematchef.ch' },
         ],
@@ -159,6 +198,10 @@ export default defineConfig({
               { text: 'Creare un’attività', link: '/it/aiuto/crea-attivita' },
               { text: 'Prestito esterno', link: '/it/aiuto/prestito-esterno' },
             ],
+          },
+          {
+            text: 'Sviluppo',
+            items: [{ text: 'Ambiente di test', link: '/it/sviluppo/ambiente-di-test' }],
           },
         ],
         outline: { label: 'In questa pagina' },

@@ -1,0 +1,38 @@
+name: CI
+
+# PR → VitePress-Build (inkl. Prüfung interner Links) → Integritätsprüfung.
+# Der Build holt die Demo-Konten aus dem Hauptrepo (siehe demo-source.json) und bricht ab, wenn das nicht gelingt.
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build and check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build (fails on dead links or missing/invalid demo data)
+        run: npm run build
+
+      - name: Integrity check
+        run: npm run check
