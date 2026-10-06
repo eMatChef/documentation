@@ -47,6 +47,32 @@ else {
   }
 }
 
+// Interne Links (href="/…") müssen auf vorhandene Dateien zeigen; deckt auch den Sprachumschalter ab.
+const exists = (url) => {
+  const p = decodeURIComponent(url.split('#')[0].split('?')[0]).replace(/\/$/, '')
+  return [p, `${p}.html`, `${p}/index.html`].some((c) => c !== '' && existsSync(join(dist, c)) && statSync(join(dist, c)).isFile()) || p === ''
+}
+for (const f of files.filter((p) => p.endsWith('.html'))) {
+  for (const m of readFileSync(f, 'utf8').matchAll(/href="(\/[^"]*)"/g)) {
+    if (m[1].startsWith('//') || m[1].startsWith('/assets/')) continue
+    if (!exists(m[1])) errors.push(`toter interner Link ${m[1]} in ${f.slice(dist.length + 1)}`)
+  }
+}
+
+// Jede lokalisierte Seite muss in .vitepress/lang-paths.mjs zugeordnet sein.
+const { LANGS, PAGE_GROUPS } = await import('../.vitepress/lang-paths.mjs')
+for (const g of PAGE_GROUPS) {
+  for (const l of LANGS) if (!g[l] || !existsSync(join(root, l, `${g[l]}.md`))) errors.push(`lang-paths: ${l}/${g[l]}.md fehlt`)
+}
+for (const l of LANGS) {
+  const mapped = new Set(PAGE_GROUPS.map((g) => g[l]))
+  const walkMd = (d, rel = '') => readdirSync(d).flatMap((n) => {
+    const p = join(d, n)
+    return statSync(p).isDirectory() ? walkMd(p, `${rel}${n}/`) : n.endsWith('.md') ? [`${rel}${n.slice(0, -3)}`] : []
+  })
+  for (const page of walkMd(join(root, l))) if (page !== 'index' && !mapped.has(page)) errors.push(`lang-paths: ${l}/${page}.md ist keiner Gruppe zugeordnet`)
+}
+
 // Testumgebung bleibt aus der Sitemap.
 const sitemap = existsSync(join(dist, 'sitemap.xml')) ? readFileSync(join(dist, 'sitemap.xml'), 'utf8') : ''
 if (!sitemap) errors.push('sitemap.xml fehlt')

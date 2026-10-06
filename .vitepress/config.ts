@@ -1,10 +1,19 @@
+import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'vitepress'
+
+// Sprachumschalter: eigene useLangs-Implementierung (lokalisierte Slugs), siehe .vitepress/theme-overrides/langs.ts
+const langsOverride = fileURLToPath(new URL('./theme-overrides/langs.ts', import.meta.url))
 
 export default defineConfig({
   title: 'eMatChef Hilfe',
   description:
     'Öffentliche Hilfe zu eMatChef: Materialverwaltung für Vereine und Vermietungen.',
   cleanUrls: true,
+  vite: {
+    resolve: {
+      alias: [{ find: /^\.{1,2}\/composables\/langs(\.js)?$/, replacement: langsOverride }],
+    },
+  },
   lastUpdated: true,
   srcExclude: ['README.md'],
   sitemap: {
