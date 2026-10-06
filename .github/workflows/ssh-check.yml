@@ -26,7 +26,10 @@ jobs:
           umask 077
           key="$(mktemp)"
           trap 'rm -f "$key"' EXIT
-          printf '%s\n' "$SSH_KEY" > "$key"
+          printf '%s\n' "$SSH_KEY" | tr -d '\r' > "$key"
+          # Nur Format-Diagnose, keine Schlüsselinhalte
+          echo "key_lines=$(wc -l < "$key") first_line_type=$(head -n1 "$key" | grep -oE '^-----BEGIN [A-Z ]+-----$' || echo 'unexpected') last_line_type=$(tail -n1 "$key" | grep -oE '^-----END [A-Z ]+-----$' || echo 'unexpected')"
+          ssh-keygen -y -f "$key" >/dev/null 2>&1 && echo "key_parse=ok" || echo "key_parse=failed"
           ssh -i "$key" -p "$SSH_PORT" \
             -o BatchMode=yes -o IdentitiesOnly=yes -o ConnectTimeout=15 \
             -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="$(mktemp)" \
