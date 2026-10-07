@@ -33,7 +33,7 @@ API: `api.<umgebung>.ematchef.ch`. Development und Staging zeigen einen gelben H
 
 ## Demo-Konten
 
-Alle Demo-Konten haben das Passwort **<code>{{ data.password }}</code>**. Die Adressen sind synthetisch (`<rolle>@{{ data.domain }}`) und keine echten Postfächer. Sie werden nur auf Development und Staging mit `app:create-role-users` bzw. `app:dev-demo:reset` angelegt.
+Alle Demo-Konten haben das Passwort **<code>{{ data.password }}</code>**. Die Adressen sind synthetisch (`<rolle> ( a ) {{ data.domain }}`) und keine echten Postfächer. Sie werden nur auf Development und Staging mit `app:create-role-users` bzw. `app:dev-demo:reset` angelegt.
 
 <table>
   <thead>
@@ -41,7 +41,7 @@ Alle Demo-Konten haben das Passwort **<code>{{ data.password }}</code>**. Die Ad
   </thead>
   <tbody>
     <tr v-for="a in data.accounts" :key="a.key">
-      <td><code>{{ a.email }}</code></td>
+      <td><code>{{ displayEmail(a.email) }}</code></td>
       <td>{{ a.label }} (<code>{{ a.role }}</code>)</td>
       <td>{{ groups[a.group] }}</td>
       <td>{{ a.totp ? 'TOTP' : '–' }}</td>
@@ -56,10 +56,10 @@ Rollen: `sa` Superadmin, `org` Organisationschef, `sub` Suborgchef, `mw` Materia
 Für die globalen Adminrollen ist TOTP verpflichtend. Die Demo-Konten haben feste **Test-Secrets**, damit nach jedem Neuaufbau dieselben QR-Codes funktionieren. Scanne den QR-Code mit einer Authenticator-App (Google Authenticator, Microsoft Authenticator, 2FAS, Bitwarden …) oder gib den Setup-Key manuell ein (zeitbasiert, 6 Stellen, 30 Sekunden). Normale Konten erhalten bei der Einrichtung in der App ein zufälliges Secret.
 
 <div v-for="a in withTotp" :key="a.key" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:16px 0;padding:12px 16px;border:2px dashed var(--vp-c-danger-1);border-radius:8px">
-  <img :src="a.totp.qr" width="192" height="192" :alt="'QR ' + a.email" />
+  <img :src="a.totp.qr" width="192" height="192" :alt="'QR ' + displayEmail(a.email)" />
   <div>
     <p style="margin:0 0 4px"><strong style="color:var(--vp-c-danger-1)">TESTDATEN</strong></p>
-    <p style="margin:0">Login: <code>{{ a.email }}</code></p>
+    <p style="margin:0">Login: <code>{{ displayEmail(a.email) }}</code></p>
     <p style="margin:0">Rolle: {{ a.label }} (<code>{{ a.role }}</code>)</p>
     <p style="margin:0">Setup-Key: <code>{{ a.totp.secretGrouped }}</code></p>
   </div>
