@@ -11,6 +11,7 @@ head:
 import { data } from '../../.vitepress/demo-accounts.data.ts'
 const groups = {"global": "Global", "department": "Department", "grossanlass": "Grossanlass", "supplier": "Lieferant"}
 const withTotp = data.accounts.filter((a) => a.totp)
+const displayEmail = (email) => email.replace('@', ' ( a ) ')
 </script>
 
 # Testumgebung
